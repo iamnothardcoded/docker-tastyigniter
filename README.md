@@ -1,4 +1,4 @@
-# TastyIgniter Docker
+# Docker TastyIgniter 
 
 Docker setup for [TastyIgniter](https://tastyigniter.com/) - a restaurant online ordering and management system.
 

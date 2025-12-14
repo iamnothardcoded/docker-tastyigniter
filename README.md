@@ -5,7 +5,7 @@ Docker setup for [TastyIgniter](https://tastyigniter.com/) - a restaurant online
 ## Quick Start
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/tastyigniter-docker.git
+git clone https://github.com/iamnothardcoded/tastyigniter-docker.git
 cd tastyigniter-docker
 docker-compose -f docker-compose.dev.yml up -d
 ```
@@ -46,14 +46,17 @@ Visit http://localhost:8080 and follow the setup wizard.
 ## Project Structure
 
 ```
-.
+tastyigniter-docker/
 ├── Dockerfile.dev           # PHP 8.3 + Apache image
 ├── docker-compose.dev.yml   # Development stack
 ├── docker-entrypoint.sh     # Auto-setup script
-├── .htaccess                # Apache rewrite rules
-└── data/                    # Persistent data
-    ├── db/                  # Database files
-    └── redis/               # Cache files
+└── .htaccess                # Apache rewrite rules
+
+# When deployed, data is stored at parent level:
+../data/
+├── db/                      # Database files
+├── redis/                   # Cache files
+└── storage/                 # Uploaded files
 ```
 
 ## Configuration
@@ -193,4 +196,4 @@ TastyIgniter is licensed under the [MIT License](https://github.com/tastyigniter
 
 - TastyIgniter Community: https://forum.tastyigniter.com/
 - TastyIgniter Issues: https://github.com/tastyigniter/TastyIgniter/issues
-- Docker Setup Issues: [GitHub Issues](https://github.com/YOUR-USERNAME/tastyigniter-docker/issues)
+- Docker Setup Issues: [GitHub Issues](https://github.com/iamnothardcoded/tastyigniter-docker/issues)

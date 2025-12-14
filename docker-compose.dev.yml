@@ -33,7 +33,7 @@ services:
       - MYSQL_USER=tastyigniter
       - MYSQL_PASSWORD=somepassword
     volumes:
-      - ./data/db:/var/lib/mysql  # Persistent DB storage
+      - ../data/db:/var/lib/mysql  # Persistent DB storage
     ports:
       - 3306:3306  # Expose DB on port 3306
     restart: unless-stopped
@@ -42,7 +42,7 @@ services:
     image: redis:6
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
-      - ./data/redis:/data  # Redis persistent storage
+      - ../data/redis:/data  # Redis persistent storage
     restart: unless-stopped
 
 volumes:

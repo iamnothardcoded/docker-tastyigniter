@@ -1,0 +1,71 @@
+FROM php:8.3-apache
+
+# Install necessary PHP extensions
+RUN set -ex; \
+	apt-get update; \
+	apt-get install -y \
+		unzip \
+		openssl \
+		libcurl4-openssl-dev \
+		libjpeg-dev \
+		libpng-dev \
+		libxml2-dev \
+		libonig-dev \
+		libzip-dev \
+		libicu-dev \
+	; \
+	rm -rf /var/lib/apt/lists/*; \
+	\
+	docker-php-ext-configure gd --with-jpeg=/usr; \
+	docker-php-ext-install -j$(nproc) pdo_mysql dom gd mbstring zip exif intl
+
+# Install Redis (if needed)
+RUN pecl install -o -f redis \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
+
+# Set recommended PHP.ini settings
+RUN { \
+		echo 'opcache.memory_consumption=128'; \
+		echo 'opcache.interned_strings_buffer=8'; \
+		echo 'opcache.max_accelerated_files=4000'; \
+		echo 'opcache.revalidate_freq=2'; \
+		echo 'opcache.fast_shutdown=1'; \
+		echo 'opcache.enable_cli=1'; \
+	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+# Enable Apache rewrite module
+RUN a2enmod rewrite
+
+# Configure Apache DocumentRoot to point to public directory
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf && \
+    sed -i 's|<Directory /var/www/>|<Directory /var/www/html/public>\n\tAllowOverride All|g' /etc/apache2/apache2.conf
+
+# Set the working directory inside the container
+WORKDIR /var/www/html
+
+# Copy the TastyIgniter code from the specified source version
+ENV TASTYIGNITER_VERSION 4.0.4
+
+RUN set -ex; \
+	curl -o tastyigniter.zip -fSL "https://codeload.github.com/tastyigniter/TastyIgniter/zip/v${TASTYIGNITER_VERSION}"; \
+	unzip tastyigniter.zip -d /usr/src/; \
+	rm tastyigniter.zip; \
+	mv /usr/src/TastyIgniter-${TASTYIGNITER_VERSION} /usr/src/tastyigniter
+
+# Copy .htaccess file (provided)
+COPY .htaccess /usr/src/tastyigniter/
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+    cd /usr/src/tastyigniter && composer install
+
+# Copy the entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Set the entrypoint to the script
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# Command to run Apache in the foreground
+CMD ["apache2-foreground"]

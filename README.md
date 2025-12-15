@@ -1,199 +1,202 @@
-# Docker TastyIgniter 
+# Docker TastyIgniter
 
-Docker setup for [TastyIgniter](https://tastyigniter.com/) - a restaurant online ordering and management system.
+  Docker setup for [TastyIgniter](https://tastyigniter.com/) - a restaurant online ordering and management system.
 
-## Quick Start
+  **Latest Versions:** TastyIgniter 4.0.4 • PHP 8.3 • MariaDB 10.7 • Redis 6
 
-```bash
-git clone https://github.com/iamnothardcoded/tastyigniter-docker.git
-cd tastyigniter-docker
-docker-compose -f docker-compose.dev.yml up -d
-```
+  ## ⚠️ Important: Multi-Container Application
 
-Visit http://localhost:8080 and follow the setup wizard.
+  TastyIgniter requires **3 containers** to run:
+  - Application (TastyIgniter + PHP + Apache)
+  - Database (MariaDB)
+  - Cache (Redis)
 
-## What's Included
+  **You cannot simply pull and run a single image.** Use the provided `docker-compose.yml` to orchestrate all services.
 
-- **TastyIgniter v4.0.4** - Latest stable release
-- **PHP 8.3** with Apache
-- **MariaDB 10.7** - Database server
-- **Redis 6** - Caching layer
-- **Auto-setup** - Runs install on first launch
+  ---
 
-## Requirements
+  ## Deployment Options
 
-- Docker 20.10+
-- Docker Compose 1.29+
-- 2GB free RAM
-- 5GB free disk space
+  ### Option 1: Quick Start (Docker Hub - Recommended)
 
-## Features
+  Pull pre-built image from Docker Hub:
 
-- Zero-configuration setup
-- Persistent database and storage
-- Live code editing with volume mounts
-- Production-ready foundation
-- Automated TastyIgniter installation
+  ```bash
+  mkdir tastyigniter && cd tastyigniter
+  curl -LO https://github.com/iamnothardcoded/tastyigniter-docker/raw/master/docker-compose.yml
+  docker compose up -d
+  ```
 
-## Services
+  Visit http://localhost:8080 and follow the setup wizard.
 
-| Service | Port | Description |
-|---------|------|-------------|
-| app     | 8080 | TastyIgniter web interface |
-| db      | 3306 | MariaDB database |
-| redis   | -    | Cache backend (internal) |
+  For Synology DiskStation:
+  1. Open Container Manager (formerly Docker)
+  2. Go to Project → Create
+  3. Name it "tastyigniter"
+  4. Download https://github.com/iamnothardcoded/tastyigniter-docker/raw/master/docker-compose.yml and paste contents
+  5. Click Create
 
-## Project Structure
+  Option 2: Build from Source
 
-```
-tastyigniter-docker/
-├── Dockerfile.dev           # PHP 8.3 + Apache image
-├── docker-compose.dev.yml   # Development stack
-├── docker-entrypoint.sh     # Auto-setup script
-└── .htaccess                # Apache rewrite rules
+  For developers who want to build locally:
 
-# When deployed, data is stored at parent level:
-../data/
-├── db/                      # Database files
-├── redis/                   # Cache files
-└── storage/                 # Uploaded files
-```
+  git clone https://github.com/iamnothardcoded/tastyigniter-docker.git
+  cd tastyigniter-docker
+  docker compose -f docker-compose.dev.yml up -d
 
-## Configuration
+  ---
+  What's Included
 
-### Environment Variables
+  - TastyIgniter v4.0.4 - Latest stable release
+  - PHP 8.3 with Apache
+  - MariaDB 10.7 - Database server
+  - Redis 6 - Caching layer
+  - Auto-setup - Runs install on first launch
 
-Edit `docker-compose.dev.yml` to customize:
+  Requirements
 
-```yaml
-environment:
-  - APP_URL=http://localhost:8080
-  - DB_DATABASE=tastyigniter
-  - DB_USERNAME=tastyigniter
-  - DB_PASSWORD=somepassword  # Change this!
-  - CACHE_DRIVER=redis
-```
+  - Docker 20.10+
+  - Docker Compose 2.0+ (or 1.29+)
+  - 2GB free RAM
+  - 5GB free disk space
 
-### Ports
+  Services
 
-Change exposed ports if needed:
+  | Service | Port | Description                |
+  |---------|------|----------------------------|
+  | app     | 8080 | TastyIgniter web interface |
+  | db      | 3306 | MariaDB database           |
+  | redis   | -    | Cache backend (internal)   |
 
-```yaml
-ports:
-  - "8080:80"  # Change 8080 to your preferred port
-```
+  First Run Setup
 
-## Usage
+  1. Start containers (see deployment options above)
+  2. Wait 30-60 seconds for database initialization
+  3. Visit http://localhost:8080/setup
+  4. Follow the TastyIgniter setup wizard
+  5. Use these database credentials:
+    - Host: db
+    - Database: tastyigniter
+    - Username: tastyigniter
+    - Password: somepassword
 
-### Start Services
+  Configuration
 
-```bash
-docker-compose -f docker-compose.dev.yml up -d
-```
+  Change Port
 
-### View Logs
+  Edit docker-compose.yml:
+  ports:
+    - "8080:80"  # Change 8080 to your preferred port
 
-```bash
-docker-compose -f docker-compose.dev.yml logs -f app
-```
+  Change Database Password
 
-### Stop Services
+  Edit docker-compose.yml and update both places:
+  # In app service:
+  - DB_PASSWORD=your_new_password
 
-```bash
-docker-compose -f docker-compose.dev.yml down
-```
+  # In db service:
+  - MYSQL_PASSWORD=your_new_password
 
-### Complete Reset
+  Custom Domain
 
-```bash
-docker-compose -f docker-compose.dev.yml down -v
-rm -rf data/
-```
+  environment:
+    - APP_URL=https://yourdomain.com
 
-## First Run
+  Usage
 
-1. Start the containers (see above)
-2. Wait 30-60 seconds for initialization
-3. Visit http://localhost:8080/setup
-4. Follow the TastyIgniter setup wizard
-5. Use these database credentials:
-   - Host: `db`
-   - Database: `tastyigniter`
-   - Username: `tastyigniter`
-   - Password: `somepassword`
+  View Logs
 
-## Development
+  docker compose logs -f app
 
-Mount your local TastyIgniter code to develop live:
+  Stop Services
 
-```yaml
-volumes:
-  - ./path/to/your/app:/var/www/html
-```
+  docker compose down
 
-Changes to PHP files reflect immediately. For template changes, clear cache:
+  Restart
 
-```bash
-docker-compose exec app php artisan cache:clear
-```
+  docker compose restart
 
-## Production Use
+  Complete Reset
 
-This is a development setup. For production:
+  docker compose down -v  # Removes all data!
 
-1. Change all passwords
-2. Use stronger database credentials
-3. Enable HTTPS (add nginx proxy)
-4. Set `APP_DEBUG=false`
-5. Configure backup strategy
-6. Use named volumes instead of bind mounts
+  Development
 
-## Troubleshooting
+  For local development with live code editing:
 
-### Port already in use
+  1. Clone this repository
+  2. Use docker-compose.dev.yml which mounts your local app folder
+  3. Edit files in /app directory
+  4. Changes reflect immediately
 
-Change port 8080 to another in `docker-compose.dev.yml`
+  docker compose -f docker-compose.dev.yml up -d
 
-### Permission errors
+  Clear cache after template changes:
+  docker compose exec app php artisan cache:clear
 
-```bash
-docker-compose exec app chown -R www-data:www-data /var/www/html
-```
+  Project Structure
 
-### Database connection failed
+  tastyigniter-docker/
+  ├── docker-compose.yml       # Production (Docker Hub image)
+  ├── docker-compose.dev.yml   # Development (local build)
+  ├── Dockerfile.dev           # PHP 8.3 + Apache image
+  ├── docker-entrypoint.sh     # Auto-setup script
+  └── .htaccess                # Apache rewrite rules
 
-Check database is running:
-```bash
-docker-compose ps
-docker-compose logs db
-```
+  Troubleshooting
 
-### Clear everything and start over
+  Port already in use
 
-```bash
-docker-compose down -v
-rm -rf data/
-docker-compose up -d
-```
+  Change port in docker-compose.yml:
+  ports:
+    - "8081:80"  # Use 8081 instead
 
-## Contributing
+  Database connection failed
 
-Contributions welcome! Please open an issue or PR.
+  Wait longer for database initialization (can take 60 seconds on first run):
+  docker compose logs db  # Check database logs
 
-## Resources
+  Permission errors
 
-- [TastyIgniter Documentation](https://docs.tastyigniter.com/)
-- [TastyIgniter GitHub](https://github.com/tastyigniter/TastyIgniter)
-- [Docker Documentation](https://docs.docker.com/)
+  docker compose exec app chown -R www-data:www-data /var/www/html
 
-## License
+  Start fresh
 
-This Docker configuration is released under the MIT License.
+  docker compose down -v
+  docker compose up -d
 
-TastyIgniter is licensed under the [MIT License](https://github.com/tastyigniter/TastyIgniter/blob/master/LICENSE).
+  Production Deployment
 
-## Support
+  For production use:
 
-- TastyIgniter Community: https://forum.tastyigniter.com/
-- TastyIgniter Issues: https://github.com/tastyigniter/TastyIgniter/issues
-- Docker Setup Issues: [GitHub Issues](https://github.com/iamnothardcoded/tastyigniter-docker/issues)
+  1. Change passwords - Update DB_PASSWORD and MYSQL_PASSWORD
+  2. Use HTTPS - Add reverse proxy (nginx/Traefik)
+  3. Disable debug - Set APP_DEBUG=false
+  4. Configure backups - Backup db-data and storage volumes
+  5. Update regularly - Pull latest images periodically
+
+  Docker Hub
+
+  Pre-built image: https://hub.docker.com/r/iamnothardcoded/tastyigniter
+
+  Contributing
+
+  Contributions welcome! Please open an issue or PR.
+
+  Resources
+
+  - https://docs.tastyigniter.com/
+  - https://github.com/tastyigniter/TastyIgniter
+  - https://hub.docker.com/r/iamnothardcoded/tastyigniter
+
+  License
+
+  This Docker configuration is released under the MIT License.
+
+  TastyIgniter is licensed under the https://github.com/tastyigniter/TastyIgniter/blob/master/LICENSE.
+
+  Support
+
+  - TastyIgniter Community: https://forum.tastyigniter.com/
+  - TastyIgniter Issues: https://github.com/tastyigniter/TastyIgniter/issues
+  - Docker Setup Issues: https://github.com/iamnothardcoded/tastyigniter-docker/issues

@@ -42,7 +42,31 @@ services:
       - redis-data:/data
     restart: unless-stopped
 
+  print-server:
+    build: ../print-server
+    container_name: tastyigniter-print-server
+    environment:
+      - API_URL=http://app
+      - API_TOKEN=${API_TOKEN}
+      - POLL_INTERVAL=5000
+    volumes:
+      - ../print-server/config:/app/config
+      - /dev:/dev
+    devices:
+      - /dev/usb/lp0:/dev/usb/lp0
+    privileged: true
+    network_mode: host
+    depends_on:
+      - app
+    restart: unless-stopped
+
 volumes:
   storage:
+    name: tastyigniter-storage
+    driver: local
   db-data:
+    name: tastyigniter-db
+    driver: local
   redis-data:
+    name: tastyigniter-redis
+    driver: local

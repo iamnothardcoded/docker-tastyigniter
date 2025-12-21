@@ -45,8 +45,10 @@ services:
   print-server:
     build: ../print-server
     container_name: tastyigniter-print-server
+    env_file:
+      - .env
     environment:
-      - API_URL=http://app
+      - API_URL=http://localhost:8080
       - API_TOKEN=${API_TOKEN}
       - POLL_INTERVAL=5000
     volumes:

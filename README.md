@@ -110,7 +110,10 @@
 
   Stop Services
 
-  docker compose down
+  # ⚠️ WARNING: Do NOT use 'docker compose down' - it triggers database re-initialization!
+  # Use these instead:
+  docker compose stop app
+  docker compose stop print-server
 
   Restart
 

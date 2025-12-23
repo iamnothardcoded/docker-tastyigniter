@@ -19,7 +19,7 @@ docker_cmd() {
 }
 
 echo "==> Building Docker image..."
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 docker_cmd build -f Dockerfile.dev -t ${IMAGE_NAME}:${VERSION} -t ${IMAGE_NAME}:latest .
 
 echo ""

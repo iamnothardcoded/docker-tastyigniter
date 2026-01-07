@@ -17,6 +17,7 @@ services:
       - REDIS_HOST=redis
     volumes:
       - storage:/var/www/html/storage
+      - ../app/lang/vendor:/var/www/html/lang/vendor
     depends_on:
       - db
       - redis

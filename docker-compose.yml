@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   app:
     image: iamnothardcoded/tastyigniter:latest
@@ -18,6 +16,7 @@ services:
     volumes:
       - storage:/var/www/html/storage
       - ../app/lang/vendor:/var/www/html/lang/vendor
+      - ../app/extensions/jamasa:/var/www/html/extensions/jamasa
     depends_on:
       - db
       - redis

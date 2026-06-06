@@ -17,6 +17,7 @@ services:
       - storage:/var/www/html/storage
       - ../app/lang/vendor:/var/www/html/lang/vendor
       - ../app/extensions/jamasa:/var/www/html/extensions/jamasa
+      - ../staff-pos:/var/www/html/public/staff-pos
     depends_on:
       - db
       - redis

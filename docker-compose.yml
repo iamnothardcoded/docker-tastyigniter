@@ -52,6 +52,21 @@ services:
       - API_URL=http://localhost:8080
       - API_TOKEN=${API_TOKEN}
       - POLL_INTERVAL=5000
+      # Printer-down → auto-close ordering (tunable defaults live in server.js;
+      # override any here if needed). Set to false to disable the whole feature.
+      - PAUSE_FEATURE_ENABLED=${PAUSE_FEATURE_ENABLED:-true}
+      - MAIN_PRINTER_ID=${MAIN_PRINTER_ID:-kitchen}
+      # SDP-printer liveness (poll recency; inert for local-mode dev printers).
+      # Uncomment/override to tune when the main printer is mode:sdp.
+      # - SDP_STALE_SECONDS=${SDP_STALE_SECONDS:-60}
+      # - SDP_BOOT_GRACE_SECONDS=${SDP_BOOT_GRACE_SECONDS:-120}
+      # Down-alert email (independent SMTP — fill these in .env)
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      - ALERT_EMAIL_TO=${ALERT_EMAIL_TO:-}
     volumes:
       - ../print-server/config:/app/config
       - /dev:/dev

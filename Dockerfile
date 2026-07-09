@@ -56,7 +56,12 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Clone TastyRhodos (your fork with customizations)
 # Using specific branch to ensure reproducible builds
 ARG TASTYRHODOS_BRANCH=4.x
-RUN git clone --depth 1 --branch ${TASTYRHODOS_BRANCH} \
+# CACHEBUST invalidates the clone + composer layers WITHOUT rebuilding the slow
+# apt/pecl base. Pass a changing value (e.g. --build-arg CACHEBUST=$(date +%s))
+# on every deploy so a rebuild always fetches the latest fork commit instead of
+# reusing Docker's cached (stale) clone.
+ARG CACHEBUST=1
+RUN echo "cachebust=${CACHEBUST}" && git clone --depth 1 --branch ${TASTYRHODOS_BRANCH} \
     https://github.com/iamnothardcoded/tastyrhodos.git /usr/src/tastyigniter
 
 # Copy .htaccess with Authorization header fix

@@ -9,6 +9,7 @@ services:
       # TI forces all generated URLs to APP_URL). Desktop access via this IP works too.
       - APP_URL=http://192.168.178.32:8080
       - DB_CONNECTION=mysql
+      # (see dns: below — embedded DNS forwarding is broken on this compose network)
       - DB_HOST=db
       - DB_DATABASE=tastyigniter
       - DB_USERNAME=tastyigniter
@@ -21,6 +22,12 @@ services:
       - ../app/extensions/jamasa:/var/www/html/extensions/jamasa
       - ../app/themes/famedo:/var/www/html/themes/famedo
       - ../staff-pos:/var/www/html/public/staff-pos
+    # Docker's embedded DNS fails to forward external lookups on this project's
+    # user-defined network (works on the default bridge) — geocoding needs
+    # nominatim.openstreetmap.org. Explicit upstreams fix resolution.
+    dns:
+      - 1.1.1.1
+      - 192.168.178.1
     depends_on:
       - db
       - redis

@@ -76,13 +76,15 @@ if [ -d '/var/www/html/storage' ]; then
     chown -R www-data:www-data /var/www/html/storage 2>/dev/null || true
 fi
 
-# Clear compiled files that might be stale + republish extension assets
+# Clear compiled files that might be stale + republish theme assets
 # (public/ is image-layer, so published fonts/FA vanish on every recreate —
-# republishing here makes that self-healing)
+# republishing here makes that self-healing; igniter-assets covers the
+# famedo theme's assets/ dir → public/vendor/famedo)
 if [ -e '/var/www/html/artisan' ]; then
     php artisan view:clear 2>/dev/null || true
     php artisan config:clear 2>/dev/null || true
-    php artisan vendor:publish --tag=jamasa-assets --force 2>/dev/null || true
+    php artisan vendor:publish --tag=igniter-assets --force 2>/dev/null || true
+    rm -rf /var/www/html/public/vendor/jamasa 2>/dev/null || true
 fi
 
 echo "🚀 Starting Apache..."

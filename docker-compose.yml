@@ -62,10 +62,11 @@ services:
       - API_URL=http://localhost:8080
       - API_TOKEN=${API_TOKEN}
       - POLL_INTERVAL=5000
-      # Manual-accept mode: OFF = classic auto-accept on print. ON = the Order
-      # Manager app (public/staff-pos/order-manager.html) is the acceptance gate
-      # (print on accept). Failsafe auto-accepts a NEU order after N seconds.
-      - MANUAL_ACCEPT=${MANUAL_ACCEPT:-false}
+      # Order rail: the printer watches PRINT_TRIGGER_STATUS (default 10,
+      # "Angenommen") and advances to 3. Acceptance (1->10) lives in the backend
+      # (auto-accept listener) or the Order Manager app (manual). Failsafe promotes
+      # pool orders (status 1) older than N seconds to 10.
+      - PRINT_TRIGGER_STATUS=${PRINT_TRIGGER_STATUS:-10}
       - MANUAL_ACCEPT_FAILSAFE_SECONDS=${MANUAL_ACCEPT_FAILSAFE_SECONDS:-900}
       # Printer-down → auto-close ordering (tunable defaults live in server.js;
       # override any here if needed). Set to false to disable the whole feature.

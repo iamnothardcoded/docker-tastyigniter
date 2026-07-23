@@ -62,7 +62,11 @@ ARG TASTYRHODOS_BRANCH=4.x
 # reusing Docker's cached (stale) clone.
 ARG CACHEBUST=1
 RUN echo "cachebust=${CACHEBUST}" && git clone --depth 1 --branch ${TASTYRHODOS_BRANCH} \
-    https://github.com/iamnothardcoded/tastyrhodos.git /usr/src/tastyigniter
+    https://github.com/iamnothardcoded/tastyrhodos.git /usr/src/tastyigniter && \
+    cd /usr/src/tastyigniter && \
+    printf 'branch=%s\ncommit=%s\ncommit_date=%s\nbuilt=%s\n' \
+        "${TASTYRHODOS_BRANCH}" "$(git rev-parse HEAD)" "$(git log -1 --format=%cI)" \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > BUILD_INFO && cat BUILD_INFO
 
 # Copy .htaccess with Authorization header fix
 COPY .htaccess /usr/src/tastyigniter/

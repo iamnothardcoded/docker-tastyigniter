@@ -81,7 +81,11 @@ fi
 # republishing here makes that self-healing; igniter-assets covers the
 # famedo theme's assets/ dir → public/vendor/famedo)
 if [ -e '/var/www/html/artisan' ]; then
-    php artisan view:clear 2>/dev/null || true
+    # PRE-COMPILE views at boot (was view:clear). view:cache clears stale
+    # compiled views AND recompiles all of them now — so the FIRST customer
+    # after a deploy/restart doesn't eat the cold Blade-compile (~2s) on their
+    # first complex-item modal. Falls back to lazy compile if it errors.
+    php artisan view:cache 2>/dev/null || php artisan view:clear 2>/dev/null || true
     php artisan config:clear 2>/dev/null || true
     php artisan vendor:publish --tag=igniter-assets --force 2>/dev/null || true
     rm -rf /var/www/html/public/vendor/jamasa 2>/dev/null || true

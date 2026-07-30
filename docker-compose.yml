@@ -5,8 +5,10 @@ services:
     ports:
       - "8080:80"
     environment:
-      # LAN IP so the site works from phones on the same network (was http://localhost:8080;
-      # TI forces all generated URLs to APP_URL). Desktop access via this IP works too.
+      # LAN IP so the site works from phones on the same network (TI forces all
+      # generated URLs to APP_URL; desktop reaches this IP too). Back on the LAN IP
+      # 2026-07-29 — the Fritzbox WLAN↔WLAN isolation was fixed, so Tailscale
+      # (100.119.76.82, used 2026-07-27..28) is no longer needed for phone testing.
       - APP_URL=http://192.168.178.32:8080
       - DB_CONNECTION=mysql
       # (see dns: below — embedded DNS forwarding is broken on this compose network)
@@ -16,6 +18,9 @@ services:
       - DB_PASSWORD=somepassword
       - CACHE_DRIVER=redis
       - REDIS_HOST=redis
+      # async mail: TI queues every template mail; sync would send SMTP inline
+      # in the checkout request. jobs table ships as a jamasa migration.
+      - QUEUE_CONNECTION=database
     volumes:
       - storage:/var/www/html/storage
       - ../app/lang/vendor:/var/www/html/lang/vendor
@@ -26,6 +31,36 @@ services:
     # Docker's embedded DNS fails to forward external lookups on this project's
     # user-defined network (works on the default bridge) — geocoding needs
     # nominatim.openstreetmap.org. Explicit upstreams fix resolution.
+    dns:
+      - 1.1.1.1
+      - 192.168.178.1
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  # Executes the queued jobs (mail sends). --max-time recycles the process
+  # hourly so code changes are picked up; restart policy respawns it.
+  queue-worker:
+    image: iamnothardcoded/tastyigniter:latest
+    container_name: tastyigniter-queue-worker
+    command: php artisan queue:work --sleep=3 --tries=3 --backoff=60 --max-time=3600
+    environment:
+      - APP_URL=http://192.168.178.32:8080
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_DATABASE=tastyigniter
+      - DB_USERNAME=tastyigniter
+      - DB_PASSWORD=somepassword
+      - CACHE_DRIVER=redis
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=database
+    volumes:
+      - storage:/var/www/html/storage
+      - ../app/lang/vendor:/var/www/html/lang/vendor
+      - ../app/extensions/jamasa:/var/www/html/extensions/jamasa
+      - ../app/extensions/iamnothardcoded:/var/www/html/extensions/iamnothardcoded
+      - ../app/themes/famedo:/var/www/html/themes/famedo
     dns:
       - 1.1.1.1
       - 192.168.178.1

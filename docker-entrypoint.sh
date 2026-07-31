@@ -89,6 +89,11 @@ if [ -e '/var/www/html/artisan' ]; then
     php artisan config:clear 2>/dev/null || true
     php artisan vendor:publish --tag=igniter-assets --force 2>/dev/null || true
     rm -rf /var/www/html/public/vendor/jamasa 2>/dev/null || true
+    # public/storage → storage/app/public symlink for uploaded media (logos,
+    # hero covers). public/ is image-layer, so the symlink vanishes on every
+    # recreate → media manager shows no previews and every media URL 404s.
+    # Self-heal it here (idempotent; --force replaces a stale/broken link).
+    php artisan storage:link --force 2>/dev/null || true
 fi
 
 echo "🚀 Starting Apache..."

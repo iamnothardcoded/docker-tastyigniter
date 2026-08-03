@@ -5,11 +5,12 @@ services:
     ports:
       - "8080:80"
     environment:
-      # Tailscale IP so the site works regardless of which LAN the dev box is on
-      # (TI forces all generated URLs to APP_URL; phones reach it via the tailnet).
-      # Back on Tailscale 2026-08-02 — box was on a foreign subnet (192.168.1.x),
-      # the home-LAN IP 192.168.178.32 (used 2026-07-29..08-01) was unreachable.
-      - APP_URL=http://100.119.76.82:8080
+      # Home-LAN (testlab) IP — TI forces all generated URLs to APP_URL, so the
+      # phone must reach exactly this host. Back on the LAN IP 2026-08-03 after
+      # the box returned to the home network (wlp1s0 = 192.168.178.32).
+      # ⚠️ If the box moves to another subnet, or the phone cannot reach it,
+      # switch back to the Tailscale IP: http://100.119.76.82:8080
+      - APP_URL=http://192.168.178.32:8080
       - DB_CONNECTION=mysql
       # (see dns: below — embedded DNS forwarding is broken on this compose network)
       - DB_HOST=db
@@ -46,7 +47,8 @@ services:
     container_name: tastyigniter-queue-worker
     command: php artisan queue:work --sleep=3 --tries=3 --backoff=60 --max-time=3600
     environment:
-      - APP_URL=http://100.119.76.82:8080
+      # Keep in sync with the app service above (mail links are built from this).
+      - APP_URL=http://192.168.178.32:8080
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_DATABASE=tastyigniter
